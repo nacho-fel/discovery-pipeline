@@ -1,0 +1,106 @@
+# Paired (language, phrase) terms -- NOT expanded via the coverage-matrix
+# Cartesian mechanism in query_planner.py, because language and phrase must
+# stay coupled (a Spanish phrase must never pair with language="fr"). Each
+# entry becomes exactly one PlannedQuery via
+# `query_planner.plan_multilingual_queries()`, built through the same
+# `build_programmatic_query()` helper frontier.py uses, so it shares the
+# identical fingerprint/dedup/coverage-cell machinery as templated queries.
+#
+# Two purposes, per the brief:
+#  1. multilingual extraction-cost terminology, for geothermal-active
+#     non-English-speaking countries (Iceland, Turkey, Indonesia, Mexico/
+#     Chile/Costa Rica, France, Germany, Italy, Philippines);
+#  2. English-language geothermal/oil-and-gas cost SYNONYMS not already
+#     covered by the slug-based templates in query_templates.yaml (AFE
+#     terminology, unconventional-well cost-per-lateral-foot phrasing,
+#     hard-rock mining cost terms) -- language "en" here is deliberate.
+
+terms:
+  # --- Spanish (Mexico, Chile, Costa Rica geothermal) ---
+  - language: es
+    kind: broad_domain
+    phrase: "costo de perforación geotérmica"
+  - language: es
+    kind: cost_component
+    phrase: "costo de pozo geotérmico por metro"
+
+  # --- French (Soultz-sous-Forêts, French Antilles) ---
+  - language: fr
+    kind: broad_domain
+    phrase: "coût de forage géothermique"
+  - language: fr
+    kind: cost_component
+    phrase: "coût du puits géothermique par mètre"
+
+  # --- German (Germany, Switzerland) ---
+  - language: de
+    kind: broad_domain
+    phrase: "Bohrkosten Geothermie"
+  - language: de
+    kind: cost_component
+    phrase: "Kosten geothermische Tiefbohrung pro Meter"
+
+  # --- Icelandic (Iceland: among the highest per-capita geothermal use) ---
+  - language: is
+    kind: broad_domain
+    phrase: "borkostnaður jarðhitaborholu"
+
+  # --- Turkish (major geothermal producer) ---
+  - language: tr
+    kind: broad_domain
+    phrase: "jeotermal sondaj maliyeti"
+
+  # --- Indonesian (major geothermal producer) ---
+  - language: id
+    kind: broad_domain
+    phrase: "biaya pengeboran panas bumi"
+
+  # --- Italian (Larderello / Tuscany) ---
+  - language: it
+    kind: broad_domain
+    phrase: "costo perforazione geotermica"
+
+  # --- Portuguese (Brazil, Azores) ---
+  - language: pt
+    kind: broad_domain
+    phrase: "custo de perfuração geotérmica"
+
+  # --- English-language cost-terminology synonyms not covered by the
+  #     slug-based templates (AFE phrasing, unconventional-well cost-per-
+  #     lateral-foot, hard-rock mining cost terms) ---
+  - language: en
+    kind: cost_component
+    phrase: "authorization for expenditure AFE shale well cost breakdown"
+  - language: en
+    kind: cost_component
+    phrase: "cost per lateral foot unconventional horizontal well"
+  - language: en
+    kind: cost_component
+    phrase: "spud to total depth days cost land rig"
+  - language: en
+    kind: cost_driver
+    phrase: "hard rock mining exploration drilling cost per meter"
+  - language: en
+    kind: cost_driver
+    phrase: "rig day rate land drilling contract benchmark"
+
+  # --- Structured/tabular-data equivalents of the above (spreadsheets,
+  # datasets, cost curves/models/equations) -- same rationale as
+  # query_templates.yaml's "Structured/tabular data discovery" section, just
+  # for the languages/phrases whose word order doesn't fit that file's
+  # slug-based Cartesian templates. ---
+  - language: es
+    kind: cost_component
+    phrase: "hoja de cálculo de costos de perforación geotérmica base de datos"
+  - language: fr
+    kind: cost_component
+    phrase: "feuille de calcul coûts de forage géothermique base de données"
+  - language: de
+    kind: cost_component
+    phrase: "Tabellenkalkulation Bohrkosten Geothermie Datenbank"
+  - language: en
+    kind: dataset_model_name
+    phrase: "well cost database cost curve model equation downloadable spreadsheet"
+  - language: en
+    kind: cost_component
+    phrase: "supplementary material appendix supporting information cost table dataset"

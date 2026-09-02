@@ -1,0 +1,191 @@
+# Deterministic, high-recall screening rules. Version bumped whenever the
+# keyword lists or weights change -- `ScreeningDecision.rules_version` records
+# exactly which version produced a decision, so re-screening is reproducible.
+# v2: added multilingual cost/domain terminology (es/fr/de/is/tr/id/it/pt) and
+# English oil-and-gas/mining cost synonyms, to recognize hits from
+# query_planner.plan_multilingual_queries() and repository-scoped searches.
+# v3: three additive direct-cost synonyms, motivated by concrete false
+# negatives found while auditing the 2026-08-20 live smoke test's 42 real
+# candidates (data/smoke_test_runs/smoketest_20260820T194944Z_audit/): several
+# genuinely on-topic, high-quality sources (an EIA well-cost report, a
+# Congressional Research Service compliance-cost figure) used phrasing the
+# v2 list didn't catch -- "costs per well" (word order) and "cost of
+# drilling" (reversed word order vs. "drilling cost"). See the audit report's
+# before/after comparison for the measured effect; no existing keyword or
+# weight was changed or removed.
+# v4: structured/tabular sources (spreadsheets, CSV, datasets) get a source-
+# quality boost -- see `structured_data_keywords` and screener.py's
+# structured-data boost -- per the production ranking objective ("structured/
+# tabular sources get a boost" over narrative-prose-only documents, since
+# they yield cost observations at much higher density per source). Folded
+# into `source_quality` rather than a new weighted dimension, so no new
+# ScreeningDecision column/migration is needed for this boost.
+version: "rules-v4"
+
+weights:
+  direct_cost_evidence: 0.30
+  technical_driver_evidence: 0.20
+  domain_relevance: 0.20
+  source_quality: 0.15
+  accessibility: 0.10
+  coverage_novelty: 0.05
+
+direct_cost_keywords:
+  - drilling cost
+  - completion cost
+  - stimulation cost
+  - well cost
+  - cost per foot
+  - cost per meter
+  - cost per stage
+  - rig day rate
+  - authorization for expenditure
+  - capital expenditure
+  - overnight capital cost
+  - cost curve
+  - cost index
+  - afe
+  - capex
+  # English oil-and-gas/mining cost synonyms not implied by the terms above
+  - authorization for expenditure
+  - spud to total depth
+  - cost per lateral foot
+  - day rate
+  - exploration drilling cost
+  # v3 additions -- reversed/alternate word order for phrases the exact
+  # "drilling cost"/"well cost" forms above don't catch as a substring.
+  - cost per well
+  - costs per well
+  - cost of drilling
+  # Spanish
+  - costo de perforación
+  - costo de pozo
+  - costo por metro
+  # French
+  - coût de forage
+  - coût du puits
+  - coût par mètre
+  # German
+  - bohrkosten
+  - kosten geothermische
+  # Icelandic
+  - borkostnaður
+  # Turkish
+  - sondaj maliyeti
+  # Indonesian
+  - biaya pengeboran
+  # Italian
+  - costo perforazione
+  # Portuguese
+  - custo de perfuração
+
+technical_driver_keywords:
+  - rate of penetration
+  - "rop"
+  - lateral length
+  - casing diameter
+  - bit life
+  - rig days
+  - nonproductive time
+  - stage count
+  - proppant
+  - fracture morphology
+  - stimulated reservoir volume
+  - injectivity
+  - geothermal gradient
+  - true vertical depth
+  - measured depth
+
+structured_data_keywords:
+  - spreadsheet
+  - dataset
+  - data package
+  - workbook
+  - csv
+  - xlsx
+  - well cost database
+  - cost curve
+  - cost model
+  - cost equation
+  - supplementary material
+  - appendix
+  - supporting information
+  - data table
+
+domain_keywords:
+  - geothermal
+  - egs
+  - enhanced geothermal
+  - hydrothermal
+  - hydraulic fracturing
+  - shale
+  - unconventional well
+  - oil and gas well
+  - hard rock drilling
+  - mining drilling
+  - deep drilling
+  # Spanish / French / German / Icelandic / Turkish / Indonesian / Italian / Portuguese
+  - geotérmico
+  - géothermique
+  - geothermie
+  - jarðhiti
+  - jeotermal
+  - panas bumi
+  - geotermico
+  - geotérmica
+
+# Source-type / evidence-tier -> base source-quality score. Anything not
+# listed defaults to 0.5 (neutral -- unknown quality is not penalized against
+# recall).
+source_quality_by_type:
+  peer_reviewed_journal_article: 1.0
+  government_technical_report: 0.95
+  government_dataset_or_spreadsheet: 0.9
+  academic_or_national_lab_preprint: 0.85
+  conference_paper: 0.8
+  thesis_or_dissertation: 0.75
+  project_technical_disclosure: 0.65
+  company_press_release_or_investor_disclosure: 0.4
+  trade_news_article: 0.3
+
+trusted_domains:
+  - nrel.gov
+  - osti.gov
+  - eia.gov
+  - usgs.gov
+  - iea.org
+  - energy.gov
+  - gdr.openei.org
+  - pangea.stanford.edu
+  - onepetro.org  # high-quality SPE/OTC technical content; separately flagged
+                  # licensed_mit_access in access_policy.yaml -- quality and
+                  # accessibility are scored independently
+
+# access_status -> accessibility score.
+accessibility_by_status:
+  open_access: 1.0
+  metadata_only: 0.5
+  licensed_mit_access: 0.3
+  authentication_required: 0.25
+  manual_acquisition_required: 0.2
+  unavailable: 0.0
+  unknown: 0.6
+
+# Explicit denylist: the ONLY thing allowed to trigger an automatic reject.
+# Everything else that scores low still goes to manual_review, never reject,
+# per the brief's high-recall requirement.
+reject_domains:
+  - pinterest.com
+  - facebook.com
+  - twitter.com
+  - x.com
+  - instagram.com
+  - youtube.com
+  - amazon.com
+  - ebay.com
+
+reject_keywords:
+  - "buy now"
+  - "add to cart"
+  - job listing
+  - "we are hiring"

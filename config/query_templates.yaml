@@ -1,0 +1,163 @@
+# Curated query templates. Each template's `{placeholder}` names must match a
+# key in coverage_matrix.yaml (singular form of the list name, e.g.
+# `technology_domain` <- `technology_domains`); the planner takes the
+# Cartesian product of ONLY the placeholders a given template actually uses
+# (usually 1-2 dimensions), never the full 8-dimension matrix.
+#
+# `exact_title_doi`, `author_organization`, `citation_expansion`, and
+# `coverage_gap` query kinds are intentionally absent here -- they're
+# generated programmatically at runtime (frontier.py / coverage_analyzer.py)
+# from already-discovered candidates, not from a static template.
+
+templates:
+  - kind: broad_domain
+    adapters: [serpapi_google, openalex, crossref]
+    priority: 10
+    intent: "{technology_domain} broad domain search"
+    query: "{technology_domain} drilling cost report"
+
+  - kind: cost_component
+    adapters: [serpapi_google, openalex, crossref]
+    priority: 20
+    intent: "{technology_domain} {cost_component} cost"
+    query: "{technology_domain} {cost_component} cost"
+
+  - kind: cost_component
+    adapters: [serpapi_google]
+    priority: 25
+    intent: "{technology_domain} {cost_component} cost report PDF"
+    query: "{technology_domain} {cost_component} cost report filetype:pdf"
+
+  # 2026-08-23 campaign: added "drilling" (previously absent from this
+  # template's rendered text) after the offline audit of the prior 100-
+  # request trial (data/serpapi_learning_trials/.../offline_manual_review_audit/
+  # AUDIT_REPORT.md, section 4) identified "domain-relevance weighting" --
+  # not lack of real content -- as the dominant reason cost_driver produced
+  # zero strict accepts across 17 requests: its rendered query text carried
+  # no domain-topic word the composite score's domain_keywords list would
+  # bias search results toward. Query text only; screener.py's keyword
+  # lists are unchanged.
+  - kind: cost_driver
+    adapters: [serpapi_google, openalex, crossref]
+    priority: 20
+    intent: "{technology_domain} {technical_driver} cost driver"
+    query: "{technology_domain} {technical_driver} drilling cost"
+
+  # cost_driver's structured/tabular counterpart to cost_component's
+  # priority-22/23 templates -- previously cost_driver had no
+  # spreadsheet/dataset-targeted variant at all, despite the audit finding
+  # that the only 2 structured/tabular candidates in the entire prior trial
+  # (well-log/days-vs-depth Pason drilling spreadsheets on gdr.openei.org)
+  # were exactly technical-driver-shaped data.
+  - kind: cost_driver
+    adapters: [serpapi_google]
+    priority: 21
+    intent: "{technology_domain} {technical_driver} spreadsheet or dataset"
+    query: "{technology_domain} {technical_driver} drilling spreadsheet OR dataset OR filetype:xlsx OR filetype:csv"
+
+  - kind: named_project
+    adapters: [serpapi_google, serpapi_scholar]
+    priority: 30
+    intent: "{named_project} drilling cost"
+    query: "{named_project} drilling cost"
+
+  - kind: trusted_domain
+    adapters: [serpapi_google]
+    priority: 15
+    intent: "{technology_domain} cost evidence on {trusted_domain}"
+    query: "{technology_domain} drilling cost site:{trusted_domain}"
+
+  - kind: dataset_model_name
+    adapters: [serpapi_google, serpapi_scholar]
+    priority: 30
+    intent: "{named_dataset} cost assumptions documentation"
+    query: "{named_dataset} cost assumptions documentation"
+
+  # Repository-specific site-scoped packs (DOE GDR, OSTI, NREL, Stanford
+  # Geothermal Workshop, USGS, OnePetro) -- see coverage_matrix.yaml's
+  # `repository_domains` comment: these substitute for a real per-provider
+  # API client where one isn't stable/available, per the brief.
+  - kind: trusted_domain
+    adapters: [serpapi_google]
+    priority: 16
+    intent: "{technology_domain} evidence in the {repository_domain} repository"
+    query: "{technology_domain} drilling cost site:{repository_domain}"
+
+  - kind: trusted_domain
+    adapters: [serpapi_google]
+    priority: 26
+    intent: "{technology_domain} {cost_component} report in the {repository_domain} repository"
+    query: "{technology_domain} {cost_component} cost report site:{repository_domain} filetype:pdf"
+
+  # --- Structured/tabular data discovery. The discovery unit is a "research
+  # resource", not just a PDF: spreadsheets, CSV/TSV, ZIP archives, dataset
+  # landing pages with several downloadable assets, and appendices/
+  # supplementary material are all first-class targets, prioritized because
+  # structured data yields cost observations at a much higher density per
+  # source than narrative text.
+  - kind: cost_component
+    adapters: [serpapi_google]
+    priority: 22
+    intent: "{technology_domain} {cost_component} cost spreadsheet or dataset"
+    query: "{technology_domain} {cost_component} cost spreadsheet OR dataset OR database"
+
+  - kind: cost_component
+    adapters: [serpapi_google]
+    priority: 23
+    intent: "{technology_domain} {cost_component} cost data as a downloadable spreadsheet"
+    query: "{technology_domain} {cost_component} cost data filetype:xlsx OR filetype:xls OR filetype:csv"
+
+  - kind: broad_domain
+    adapters: [serpapi_google]
+    priority: 24
+    intent: "{technology_domain} well cost database, cost curve, model, or equation"
+    query: "{technology_domain} well cost database OR cost curve OR cost model OR cost equation"
+
+  - kind: broad_domain
+    adapters: [serpapi_google]
+    priority: 27
+    intent: "{technology_domain} supplementary material or appendix with cost data"
+    query: "{technology_domain} drilling cost supplementary material OR appendix OR supporting information"
+
+  - kind: trusted_domain
+    adapters: [serpapi_google]
+    priority: 28
+    intent: "{technology_domain} downloadable dataset or data package in the {repository_domain} repository"
+    query: "{technology_domain} cost dataset OR data package site:{repository_domain}"
+
+  - kind: trusted_domain
+    adapters: [serpapi_google]
+    priority: 29
+    intent: "{technology_domain} structured cost data (zip/xlsx/csv) in the {repository_domain} repository"
+    query: "{technology_domain} cost data site:{repository_domain} filetype:zip OR filetype:xlsx OR filetype:csv"
+
+  # --- cost_representation and evidence_type: both dimensions were already
+  # defined in coverage_matrix.yaml (and already wired into query_planner's
+  # _FIELD_TO_MATRIX_KEY) but had zero templates referencing them -- a
+  # structural gap found while planning the 2026-08-23 500-request campaign,
+  # not a backtested scoring change. cost_representation covers "how the
+  # cost is expressed" (rig day rate, cost per foot/meter, cost curve or
+  # index, AFE, CAPEX) as its own signal, distinct from cost_component's
+  # "which part of the well/project".
+  - kind: cost_representation
+    adapters: [serpapi_google, openalex, crossref]
+    priority: 19
+    intent: "{technology_domain} {cost_representation}"
+    query: "{technology_domain} {cost_representation} drilling"
+
+  - kind: cost_representation
+    adapters: [serpapi_google]
+    priority: 31
+    intent: "{technology_domain} {cost_representation} report PDF"
+    query: "{technology_domain} {cost_representation} drilling report filetype:pdf"
+
+  # evidence_type targets a source-type/format directly (technical report,
+  # thesis, conference paper, government dataset...) rather than relying on
+  # the composite score's source_quality_by_type map to notice it after the
+  # fact -- Scholar/OpenAlex/Crossref are metadata-search APIs well suited to
+  # a source-type-flavored phrase.
+  - kind: evidence_type
+    adapters: [serpapi_google, serpapi_scholar, openalex, crossref]
+    priority: 32
+    intent: "{technology_domain} {evidence_type} drilling cost"
+    query: "{technology_domain} {evidence_type} drilling cost"

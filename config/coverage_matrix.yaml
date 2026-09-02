@@ -1,0 +1,109 @@
+# Coverage matrix dimensions, per the brief's "Research scope and search
+# ontology". Values are controlled vocabularies, not free text -- query
+# templates in query_templates.yaml reference these lists by field name.
+# The planner combines only the specific 1-2 dimensions each template
+# actually needs (via its {placeholder} names), never the full Cartesian
+# product of every dimension listed here.
+
+technology_domains:
+  - enhanced_geothermal_systems
+  - conventional_hydrothermal_geothermal
+  - closed_loop_advanced_geothermal
+  - oil_and_gas_well_construction
+  - unconventional_shale_hydraulic_fracturing
+  - hard_rock_deep_mining_drilling
+
+cost_components:
+  - exploration_and_resource_confirmation
+  - site_preparation_and_well_pad
+  - drilling_and_well_construction
+  - casing_and_cementing
+  - directional_horizontal_drilling
+  - completion
+  - hydraulic_stimulation
+  - logging_testing_monitoring
+  - surface_gathering_systems
+  - redrilling_workovers_sidetracks
+
+cost_representations:
+  - total_well_cost
+  - drilling_cost
+  - completion_cost
+  - stimulation_cost
+  - cost_per_foot_or_meter
+  - rig_day_rate
+  - cost_per_stage
+  - authorization_for_expenditure
+  - capital_expenditure
+  - cost_curve_or_index
+
+technical_drivers:
+  - total_vertical_depth
+  - lateral_length
+  - wellbore_casing_diameter
+  - rate_of_penetration
+  - rig_days_nonproductive_time
+  - bit_type_and_life
+  - lithology_geological_setting
+  - temperature_geothermal_gradient
+  - formation_reservoir_pressure
+  - stage_count_proppant_fluid_volume
+  - fracture_morphology_srv
+  - injection_production_flow_rate
+
+evidence_types:
+  - peer_reviewed_journal_article
+  - academic_or_national_lab_preprint
+  - conference_paper
+  - government_technical_report
+  - government_dataset_or_spreadsheet
+  - thesis_or_dissertation
+  - project_technical_disclosure
+  - company_press_release_or_investor_disclosure
+
+geographies:
+  - global
+
+# Only "en" drives the slug-based Cartesian templates in query_templates.yaml
+# (a rendered "language" dimension here would just re-humanize an English
+# slug, not translate it). Actual multilingual queries are paired
+# (language, phrase) entries in config/multilingual_terms.yaml instead -- see
+# query_planner.plan_multilingual_queries().
+languages:
+  - en
+
+trusted_domains:
+  - nrel.gov
+  - osti.gov
+  - eia.gov
+  - usgs.gov
+  - iea.org
+
+# Named-repository site-scoped searches (brief: "where a stable public API is
+# unavailable or uncertain, implement these as configured, site-scoped
+# SerpApi query packs rather than brittle HTML scraping"). Each repository
+# also has an access-status entry in config/access_policy.yaml so a candidate
+# from a known-paywalled repository (OnePetro) is flagged before acquisition
+# is ever attempted, not after an HTTP 401/403.
+repository_domains:
+  - gdr.openei.org      # DOE Geothermal Data Repository -- multi-asset dataset landing pages
+  - osti.gov            # OSTI (also a trusted_domain above; site-scoped here too)
+  - nrel.gov            # NREL publications/data
+  - pangea.stanford.edu # Stanford Geothermal Workshop proceedings + supplementary data
+  - usgs.gov            # USGS datasets/publications
+  - eia.gov             # EIA data products
+  - onepetro.org        # SPE/OTC papers/tables/supplementary -- licensed_mit_access
+  - sciencedirect.com   # ScienceDirect supplementary materials -- licensed_mit_access
+  - spglobal.com        # S&P Global datasets/workbooks, where discoverable -- authentication_required
+  - ihsmarkit.com       # IHS Markit datasets, where discoverable -- authentication_required
+
+named_projects:
+  - "Fervo Cape Station"
+  - "FORGE Utah"
+  - "Eavor-Loop"
+  - "Soultz-sous-Forêts"
+
+named_datasets:
+  - "GETEM"
+  - "GeoVision"
+  - "PET_CRD_WELLCOST"

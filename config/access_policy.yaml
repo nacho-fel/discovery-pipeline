@@ -1,0 +1,40 @@
+# Known access status by domain, consulted at candidate-normalization time
+# (before screening, before any acquisition attempt) so a known-restricted
+# repository is flagged proactively rather than discovered via a wasted
+# HTTP 401/403 -- per the brief: "Preserve paywalled sources as metadata-only
+# candidates rather than attempting unauthorized downloads."
+#
+# Six access states -- see access_policy.py's module docstring for the full
+# definition of each. This is a *default*, not a guarantee: a domain absent
+# here gets no access_status set at normalization time (screener/acquirer
+# still apply their own runtime checks), and a domain listed "open_access"
+# can still turn out individually restricted -- acquirer.py's own 401/403
+# handling is the authoritative runtime signal either way.
+
+domain_access_status:
+  # Licensed publishers -- MIT Libraries holds subscriptions to most of
+  # these; a researcher can retrieve the actual file via MIT VPN/Touchstone/
+  # LibKey Nomad (see docs/mit_assisted_acquisition.md), but this pipeline
+  # never automates that login and never stores credentials for it.
+  onepetro.org: licensed_mit_access
+  spe.org: licensed_mit_access
+  sciencedirect.com: licensed_mit_access
+  link.springer.com: licensed_mit_access
+  onlinelibrary.wiley.com: licensed_mit_access
+  ieeexplore.ieee.org: licensed_mit_access
+  journals.plos.org: open_access # explicit open-access counter-example, kept for clarity
+
+  # Government/national-lab repositories -- open by default.
+  gdr.openei.org: open_access
+  osti.gov: open_access
+  nrel.gov: open_access
+  pangea.stanford.edu: open_access
+  usgs.gov: open_access
+  eia.gov: open_access
+  energy.gov: open_access
+
+  # Data/analytics vendors -- typically require an institutional
+  # subscription this pipeline cannot verify or automate; routed to the
+  # MIT-assisted manual-acquisition queue rather than guessed at.
+  spglobal.com: authentication_required
+  ihsmarkit.com: authentication_required
